@@ -4,7 +4,7 @@
         <option value="">Pilih Pelabuhan</option>
         <option v-for="area in areas" :key="area.id" :value="area.id">{{ area.Name }}</option>
       </select>
-      <div id="map" style="width: 100%; height: 400px;"></div>
+      <div id="map" style="width: 100%; height: 600px;"></div>
       <div class="grid grid-cols-3 gap-4 p-3">
           <button v-if="!drawingMode" @click="startDrawingLayer" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
             Tambah Pelabuhan
@@ -111,7 +111,8 @@
             }))
         }).then(response => {
             if (response.status === 200) {
-            alert('New area added successfully');
+                alert('New area added successfully');
+                this.fetchAreas();
             }
         }).catch(error => {
             console.error('Error creating new area:', error);
