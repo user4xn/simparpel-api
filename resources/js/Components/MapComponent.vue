@@ -39,7 +39,7 @@
         }).addTo(this.map);
       },
       fetchAreas() {
-        axios.get('http://localhost:8000/api/location-area')
+        axios.get(`/api/location-area`)
           .then(response => {
             const data = response.data;
             if (data.status === 'success') {
@@ -102,7 +102,7 @@
         const areaName = prompt('Enter the name of the new area:');
         if (!areaName) return;
 
-        axios.post('http://localhost:8000/api/location-area/upsert', {
+        axios.post('/api/location-area/upsert', {
             area_id: null,
             name: areaName,
             coordinates: coordinates.map(coord => ({
