@@ -23,6 +23,7 @@
   import L from 'leaflet';
   import 'leaflet/dist/leaflet.css';
   import axios from 'axios';
+  import Swal from 'sweetalert2';
   
   export default {
     mounted() {
@@ -95,31 +96,51 @@
         this.drawingMode = false;
         const coordinates = this.polygonLayer.getLatLngs()[0];
         if (coordinates.length < 3) {
-            alert('Polygon must have at least 3 vertices.');
+            Swal.fire('Error', 'Polygon must have at least 3 vertices.', 'error');
             return;
         }
 
-        const areaName = prompt('Enter the name of the new area:');
-        if (!areaName) return;
-
-        axios.post('/api/location-area/upsert', {
-            area_id: null,
-            name: areaName,
-            coordinates: coordinates.map(coord => ({
-            lat: coord.lat.toFixed(6),
-            long: coord.lng.toFixed(6)
-            }))
-        }).then(response => {
-            if (response.status === 200) {
-                alert('New area added successfully');
-                this.fetchAreas();
+        Swal.fire({
+            title: 'Masukan Nama Pelabuhan:',
+            input: 'text',
+            inputAttributes: {
+            autocapitalize: 'off'
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Simpan',
+            cancelButtonText: 'Batal',
+            showLoaderOnConfirm: true,
+            preConfirm: (name) => {
+            if (!name) {
+                Swal.showValidationMessage('Harap masukan nama pelabuhan');
             }
-        }).catch(error => {
-            console.error('Error creating new area:', error);
-            alert('Error creating new area');
-        }).finally(() => {
-            this.map.off('click');
-            this.map.removeLayer(this.polygonLayer);
+            return name;
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then(result => {
+            if (result.isConfirmed) {
+            const areaName = result.value;
+
+            axios.post('/api/location-area/upsert', {
+                area_id: null,
+                name: areaName,
+                coordinates: coordinates.map(coord => ({
+                lat: coord.lat.toFixed(6),
+                long: coord.lng.toFixed(6)
+                }))
+            }).then(response => {
+                if (response.status === 200) {
+                Swal.fire('Sukses', 'Pelabuhan berhasil ditambahkan', 'success');
+                this.fetchAreas();
+                }
+            }).catch(error => {
+                console.error('Error creating new area:', error);
+                Swal.fire('Error', 'Error saat mengirim data area', 'error');
+            }).finally(() => {
+                this.map.off('click');
+                this.map.removeLayer(this.polygonLayer);
+            });
+            }
         });
       }
     },
