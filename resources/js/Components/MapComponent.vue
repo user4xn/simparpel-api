@@ -24,6 +24,7 @@
   import 'leaflet/dist/leaflet.css';
   import axios from 'axios';
   import Swal from 'sweetalert2';
+  import harbourMarker from '../../../public/images/harbour-marker.png';
   
   export default {
     mounted() {
@@ -47,10 +48,14 @@
                 this.areas = data.data;
 
                 this.areas.forEach(area => {
+                    const markerIcon = L.icon({
+                        iconUrl: harbourMarker,
+                        iconSize: [32, 32],
+                    });
                     const coordinates = area.coordinates.map(coord => [parseFloat(coord.lat), parseFloat(coord.long)]);
                     const polygon = L.polygon(coordinates).addTo(this.map);
                     const center = polygon.getBounds().getCenter();
-                    const marker = L.marker(center).addTo(this.map);
+                    const marker = L.marker(center,  { icon: markerIcon }).addTo(this.map);
                     marker.bindTooltip(area.Name, { permanent: true });
                 });
             }
