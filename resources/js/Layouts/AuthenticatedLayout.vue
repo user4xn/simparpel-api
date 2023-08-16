@@ -118,6 +118,9 @@ const showingNavigationDropdown = ref(false);
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('pelabuhan')" :active="route().current('pelabuhan')">
+                            Pelabuhan
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->

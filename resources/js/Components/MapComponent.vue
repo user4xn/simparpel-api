@@ -1,12 +1,12 @@
 <template>
     <div>
-      <select v-if="!drawingMode" @change="handleAreaChange" class="w-full border-0">
+      <select @change="handleAreaChange" class="w-full border-0">
         <option value="">Pilih Pelabuhan</option>
         <option v-for="area in areas" :key="area.id" :value="area.id">{{ area.Name }}</option>
       </select>
       <div id="map" :style="{ width: '100%', height: '600px', cursor: drawingMode ? 'crosshair' : 'auto' }"></div>
       <div class="grid grid-cols-3 gap-4 p-3">
-          <button v-if="!drawingMode" @click="startDrawingLayer" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          <button v-if="!drawingMode" @click="startDrawingLayer" class="mt-2 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
             Tambah Pelabuhan
           </button>
           <button v-if="drawingMode" @click="sendNewArea" class="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
@@ -101,7 +101,8 @@
         this.drawingMode = false;
         const coordinates = this.polygonLayer.getLatLngs()[0];
         if (coordinates.length < 3) {
-            Swal.fire('Error', 'Polygon must have at least 3 vertices.', 'error');
+            Swal.fire('Error', 'Polygon harus memiliki setidaknya 3 titik koordinat.', 'error');
+            this.map.removeLayer(this.polygonLayer);
             return;
         }
 
@@ -141,6 +142,7 @@
             }).catch(error => {
                 console.error('Error creating new area:', error);
                 Swal.fire('Error', 'Error saat mengirim data area', 'error');
+                this.map.removeLayer(this.polygonLayer);
             }).finally(() => {
                 this.map.off('click');
                 this.map.removeLayer(this.polygonLayer);
