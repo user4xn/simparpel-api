@@ -48,7 +48,9 @@ class ShipController extends Controller
             ->get();
         
         $logParking = ParkingLog::where('ship_id', $id)
-            ->orderBy('created_at', 'DESC')
+            ->join('harbours', 'harbours.id', '=', 'parking_logs.harbour_id')
+            ->select('parking_logs.*', 'harbours.name as harbour_name')
+            ->orderBy('harbours.created_at', 'DESC')
             ->get();
 
         $fetch = [

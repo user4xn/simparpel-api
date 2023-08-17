@@ -17,6 +17,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/dashboard/overview', 'App\Http\Controllers\DashboardController@overview');
+
 Route::get('/ship', 'App\Http\Controllers\ShipController@ships');
 Route::get('/ship/{id}/status', 'App\Http\Controllers\ShipController@shipStatus');
 Route::post('/ship/upsert', 'App\Http\Controllers\ShipController@upsertShip');
