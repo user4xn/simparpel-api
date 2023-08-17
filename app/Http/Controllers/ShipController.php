@@ -262,7 +262,7 @@ class ShipController extends Controller
         ];
     
         $postData = [
-            'registration_code' => $token,
+            'to' => $token,
             'notification' => $data,
         ];
     
