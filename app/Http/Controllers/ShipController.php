@@ -119,20 +119,26 @@ class ShipController extends Controller
                     });
 
                 if($this->statusCheck([$request->lat, $request->long], $harbourGeofence)){
-                    $parkingLog = new ParkingLog();
-                    $parkingLog->ship_id = $ship->id;
-                    $parkingLog->harbour_id = $nearestHarbourid;
-                    $parkingLog->ship_id = $ship->id;
-                    $parkingLog->status = 'checkin';
-                    $parkingLog->save();
+                    $lastLogs = ParkingLog::where(['ship_id' => $ship->id, 'harbour_id' => $nearestHarbourid])
+                        ->orderBy('created_at', 'DESC')
+                        ->first();
+                    
+                    if($lastLogs != 'checkin') {
+                        $parkingLog = new ParkingLog();
+                        $parkingLog->ship_id = $ship->id;
+                        $parkingLog->harbour_id = $nearestHarbourid;
+                        $parkingLog->ship_id = $ship->id;
+                        $parkingLog->status = 'checkin';
+                        $parkingLog->save();
 
-                    try{
-                        $this->pushNotification([
-                            'title' => 'SIMPARPEL - CHECK IN SUCCESS',
-                            'body' => 'Berhasil CHECK-IN ('.ucwords($harbourData).') '.date('ymd-hi'),
-                        ], $ship->firebase_token);
-                    } catch (Exception $e){
-                        Log::error('Push notification error: ' . $e->getMessage());
+                        try{
+                            $this->pushNotification([
+                                'title' => 'SIMPARPEL - CHECK IN SUCCESS',
+                                'body' => 'Berhasil CHECK-IN ('.ucwords($harbourData->name).') '.date('ymd-hi'),
+                            ], [$ship->firebase_token]);
+                        } catch (Exception $e){
+                            Log::error('Push notification error: ' . $e->getMessage());
+                        }
                     }
                     
                     $status = 'checkin';
@@ -152,8 +158,8 @@ class ShipController extends Controller
                         try{
                             $this->pushNotification([
                                 'title' => 'SIMPARPEL - CHECK OUT SUCCESS',
-                                'body' => 'Berhasil CHECK-OUT ('.ucwords($harbourData).') '.date('ymd-hi'),
-                            ], $ship->firebase_token);
+                                'body' => 'Berhasil CHECK-OUT ('.ucwords($harbourData->name).') '.date('ymd-hi'),
+                            ], [$ship->firebase_token]);
                         } catch (Exception $e){
                             Log::error('Push notification error: ' . $e->getMessage());
                         }
@@ -254,7 +260,7 @@ class ShipController extends Controller
         return $nearestLocationId;
     }
 
-    public function pushNotification($data, $token) {
+    public function pushNotification($data, $tokens) {
         $url = 'https://fcm.googleapis.com/fcm/send';
         $headers = [
             'Content-Type: application/json',
@@ -262,7 +268,7 @@ class ShipController extends Controller
         ];
     
         $postData = [
-            'registration_code' => $token,
+            'registration_ids' => $tokens,
             'notification' => $data,
         ];
     
