@@ -33,6 +33,10 @@ Route::get('/pelabuhan', function () {
     return Inertia::render('Pelabuhan');
 })->middleware(['auth', 'verified'])->name('pelabuhan');
 
+Route::get('/kapal', function () {
+    return Inertia::render('Kapal');
+})->middleware(['auth', 'verified'])->name('kapal');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
