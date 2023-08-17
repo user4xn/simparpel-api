@@ -3,6 +3,27 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import MapDashboard from '@/Components/MapDashboard.vue';
 import { IconShip, IconShipOff, IconTower } from '@tabler/icons-vue';
+import { ref, onMounted,} from 'vue';
+
+const ovData = ref({});
+const isLoaded = ref(false);
+
+onMounted(async () => {
+    overview();
+    isLoaded.value = true;
+});
+
+const overview = async () => {
+    try {
+        const response = await axios.get(`/api/dashboard/overview`);
+        if (response.data.status === 'success') {
+            ovData.value = response.data.data;
+        }
+    } catch (error) {
+        console.error('Error fetching overview details:', error);
+    }
+}
+
 </script>
 
 <template>
@@ -24,7 +45,7 @@ import { IconShip, IconShipOff, IconTower } from '@tabler/icons-vue';
                             <IconTower :size="60" class="text-white" :stroke-width="1"/>
                         </div>
                         <div class="w-2/3 flex flex-col px-2 text-white text-end">
-                            <div class="text-5xl font-black antialiased">2</div>
+                            <div class="text-5xl font-black antialiased">{{ ovData.total_harbour ? ovData.total_harbour : '0' }}</div>
                             <div class="font-semibold uppercase">Jumlah Pelabuhan</div>
                         </div>
                     </div>
@@ -33,7 +54,7 @@ import { IconShip, IconShipOff, IconTower } from '@tabler/icons-vue';
                             <IconShip :size="60" class="text-white" :stroke-width="1"/>
                         </div>
                         <div class="w-2/3 flex flex-col px-2 text-white text-end">
-                            <div class="text-5xl font-black antialiased">5</div>
+                            <div class="text-5xl font-black antialiased">{{ ovData.total_ship ? ovData.total_ship : '0' }}</div>
                             <div class="font-semibold uppercase">Jumlah Kapal</div>
                         </div>
                     </div>
@@ -42,7 +63,7 @@ import { IconShip, IconShipOff, IconTower } from '@tabler/icons-vue';
                             <IconShipOff :size="60" class="text-white" :stroke-width="1"/>
                         </div>
                         <div class="w-2/3 flex flex-col px-2 text-white text-end">
-                            <div class="text-5xl font-black antialiased">2</div>
+                            <div class="text-5xl font-black antialiased">{{ ovData.total_unnamed_ship ? ovData.total_unnamed_ship : '0' }}</div>
                             <div class="font-semibold uppercase">Kapal Tidak Dikenal</div>
                         </div>
                     </div>
