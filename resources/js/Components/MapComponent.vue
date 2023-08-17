@@ -4,7 +4,7 @@
         <option value="">Pilih Pelabuhan</option>
         <option v-for="area in areas" :key="area.id" :value="area.id">{{ area.Name }}</option>
       </select>
-      <div id="map" :style="{ width: '100%', height: '600px', cursor: drawingMode ? 'crosshair' : 'auto' }"></div>
+      <div id="map" :style="{ width: '100%', height: '600px', cursor: drawingMode ? 'crosshair' : 'default' }"></div>
       <div class="grid grid-cols-3 gap-4 p-3">
           <button v-if="!drawingMode" @click="startDrawingLayer" class="mt-2 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
             Tambah Pelabuhan
@@ -41,7 +41,7 @@
         }).addTo(this.map);
       },
       fetchAreas() {
-        axios.get(`/api/location-area`)
+        axios.get(`/api/harbour`)
           .then(response => {
             const data = response.data;
             if (data.status === 'success') {
@@ -127,7 +127,7 @@
             if (result.isConfirmed) {
             const areaName = result.value;
 
-            axios.post('/api/location-area/upsert', {
+            axios.post('/api/harbour/upsert', {
                 area_id: null,
                 name: areaName,
                 coordinates: coordinates.map(coord => ({
