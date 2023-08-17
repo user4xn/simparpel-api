@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('location_areas', function (Blueprint $table) {
+        Schema::create('harbour_geofences', function (Blueprint $table) {
             $table->id();
-            $table->string('Name');
+            $table->tinyInteger('harbour_id');
+            $table->string('long');
+            $table->string('lat');
             $table->timestamps();
         });
     }
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('location_areas');
+        Schema::dropIfExists('harbour_geofences');
     }
 };

@@ -17,9 +17,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/marker', 'App\Http\Controllers\CoordinateController@coordinates');
-Route::get('/marker/{id}/status', 'App\Http\Controllers\CoordinateController@coordinateStatus');
-Route::post('/marker/upsert', 'App\Http\Controllers\CoordinateController@upsertCoordinate');
+Route::get('/ship', 'App\Http\Controllers\ShipController@ships');
+Route::get('/ship/{id}/status', 'App\Http\Controllers\ShipController@shipStatus');
+Route::post('/ship/upsert', 'App\Http\Controllers\ShipController@upsertShip');
+Route::put('/ship/{id}/name', 'App\Http\Controllers\ShipController@nameShip');
 
-Route::get('/location-area', 'App\Http\Controllers\LocationAreaController@areas');
-Route::post('/location-area/upsert', 'App\Http\Controllers\LocationAreaController@upsertArea');
+Route::get('/harbour', 'App\Http\Controllers\HarbourController@harbours');
+Route::post('/harbour/upsert', 'App\Http\Controllers\HarbourController@upsertHarbour');
+Route::delete('/harbour/{id}/delete', 'App\Http\Controllers\HarbourController@deleteHarbour');
