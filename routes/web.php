@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\URL;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,10 @@ Route::get('/pelabuhan', function () {
 Route::get('/kapal', function () {
     return Inertia::render('Kapal');
 })->middleware(['auth', 'verified'])->name('kapal');
+
+Route::get('/kapal/{id}/detail', function ($id) {
+    return Inertia::render('KapalDetail', ['id' => $id]);
+})->middleware(['auth', 'verified'])->name('kapal.detail');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

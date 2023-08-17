@@ -20,9 +20,11 @@
         "vue": "^3.2.41"
     },
     "dependencies": {
+        "@tabler/icons-vue": "^2.30.0",
         "datatables.net": "^1.13.6",
         "datatables.net-bs5": "^1.13.6",
         "sweetalert2": "^11.7.23",
+        "tabler-icons": "^1.35.0",
         "vue-tables-2": "^2.3.5"
     }
 }
