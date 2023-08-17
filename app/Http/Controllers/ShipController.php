@@ -18,13 +18,13 @@ class ShipController extends Controller
         $fetch = Ship::with('harbourDetail')->get()->map(function($item){
             return [
                 'id' => $item->id,
-                'name' => $item->name,
+                'name' => $item->name ?? null,
                 'device_id' => $item->device_id,
                 'firebase_token' => $item->firebase_token,
                 'lat' => $item->lat,
                 'long' => $item->long,
                 'status' => $item->status,
-                'harbour' => $item->status != 'idle' ? $item->harbourDetail->name : null,
+                'harbour' => in_array($item->status, ['checkin', 'checkout']) && $item->harbourDetail ? $item->harbourDetail->name : null,
             ];
         });   
 
