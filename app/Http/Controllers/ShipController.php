@@ -7,7 +7,9 @@ use DB;
 use App\Models\Ship;
 use App\Models\ShipLocationLog;
 use App\Models\ParkingLog;
+use App\Models\Harbour;
 use App\Models\HarbourGeofence as Geofence;
+use Log;
 
 class ShipController extends Controller
 {
@@ -106,6 +108,8 @@ class ShipController extends Controller
 
                 $nearestHarbourid = $this->checkNearestHarbour($request->lat, $request->long);
 
+                $harbourData = Harbour::where('id', $nearestHarbourid)->first();
+
                 $harbourGeofence = Geofence::where('harbour_id', $nearestHarbourid)
                     ->select('long','lat')
                     ->get()->map(function($item){
@@ -121,6 +125,15 @@ class ShipController extends Controller
                     $parkingLog->ship_id = $ship->id;
                     $parkingLog->status = 'checkin';
                     $parkingLog->save();
+
+                    try{
+                        $this->pushNotification([
+                            'title' => 'SIMPARPEL - CHECK IN SUCCESS',
+                            'body' => 'Berhasil CHECK-IN ('.ucwords($harbourData).') '.date('ymd-hi'),
+                        ], $ship->firebase_token);
+                    } catch (Exception $e){
+                        Log::error('Push notification error: ' . $e->getMessage());
+                    }
                     
                     $status = 'checkin';
                 } else {
@@ -135,6 +148,15 @@ class ShipController extends Controller
                         $parkingLog->ship_id = $ship->id;
                         $parkingLog->status = 'checkout';
                         $parkingLog->save();
+
+                        try{
+                            $this->pushNotification([
+                                'title' => 'SIMPARPEL - CHECK OUT SUCCESS',
+                                'body' => 'Berhasil CHECK-OUT ('.ucwords($harbourData).') '.date('ymd-hi'),
+                            ], $ship->firebase_token);
+                        } catch (Exception $e){
+                            Log::error('Push notification error: ' . $e->getMessage());
+                        }
 
                         $status = 'checkout';
                     } else {
@@ -231,4 +253,35 @@ class ShipController extends Controller
 
         return $nearestLocationId;
     }
+
+    public function pushNotification($data, $token) {
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: key='.env('FIREBASE_KEY'), // Replace with your FCM server key
+        ];
+    
+        $postData = [
+            'registration_code' => $token,
+            'notification' => $data,
+        ];
+    
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+    
+        $response = curl_exec($ch);
+    
+        if (curl_errno($ch)) {
+            $error = curl_error($ch);
+            curl_close($ch);
+            return ['success' => false, 'error' => $error];
+        }
+    
+        curl_close($ch);
+        return ['success' => true, 'response' => json_decode($response, true)];
+    }
+    
 }
