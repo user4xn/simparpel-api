@@ -76,7 +76,7 @@ const editName = async (shipId) => {
                     <h2 class="text-xl font-semibold mb-4">Detail Kapal</h2>
                     <div class="text-lg font-medium">{{ ship.ship_detail.name === '' || ship.ship_detail.name === null ? '(Unnamed Ship)' : ship.ship_detail.name }}</div>
                     <p class="text-gray-500 mt-2">Device ID: {{ ship.ship_detail.device_id }}</p>
-                    <p class="text-gray-500 mt-2">Status: <span class="font-bold uppercase" :class="{'text-green-400': ship.ship_detail.status === 'checkin', 'text-red-400': ship.ship_detail.status === 'checkout', 'text-gray-800': ship.ship_detail.status === 'idle',  'text-blue-500': ship.ship_detail.status === null }">{{ ship.ship_detail.status ? ship.ship_detail.status : 'BARU' }}</span></p>
+                    <p class="text-gray-500 mt-2">Status: <span class="font-bold uppercase" :class="{'text-green-400': ship.ship_detail.status === 'checkin', 'text-red-400': ship.ship_detail.status === 'checkout', 'text-gray-800': ship.ship_detail.status === 'out of scope',  'text-blue-500': ship.ship_detail.status === null }">{{ ship.ship_detail.status ? ship.ship_detail.status : 'BARU' }}</span></p>
                     <p class="text-gray-500 mt-2">Pelabuhan Terkini: {{ ship.ship_detail.harbour_detail ? ship.ship_detail.harbour_detail.name : '-' }}</p>
                     <p class="text-gray-500 mt-2">Update Lokasi Terakhir: {{ ship.location_log[0].created_at }}</p>
                     <button v-if="ship.ship_detail.name === '' || ship.ship_detail.name === null" @click="editName(ship.ship_detail.id, 'New Name')" class="mt-6 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
@@ -91,7 +91,7 @@ const editName = async (shipId) => {
                             <li v-for="log in ship.parking_log" :key="log.id" class="flex items-center justify-between">
                                 <div>
                                     [{{ log.created_at }}] 
-                                    <span class="font-bold uppercase" :class="{'text-green-400': log.status === 'checkin', 'text-red-400': log.status === 'checkout', 'text-gray-800': log.status === 'idle' }">{{ log.status }}</span>
+                                    <span class="font-bold uppercase" :class="{'text-green-400': log.status === 'checkin', 'text-red-400': log.status === 'checkout'}">{{ log.status }}</span>
                                 </div>
                                 <div>
                                     {{ log.harbour_name ? log.harbour_name : '(Undefined Harbour '+log.harbour_id+')' }}

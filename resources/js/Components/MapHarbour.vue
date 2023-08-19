@@ -39,6 +39,8 @@
           maxZoom: 19,
           attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.map);
+
+        this.map.setMinZoom(5);
       },
       fetchAreas() {
         axios.get(`/api/harbour`)
@@ -56,7 +58,7 @@
                     const polygon = L.polygon(coordinates).addTo(this.map);
                     const center = polygon.getBounds().getCenter();
                     const marker = L.marker(center,  { icon: markerIcon }).addTo(this.map);
-                    marker.bindTooltip(area.name, { permanent: true });
+                    marker.bindTooltip(area.name);
                 });
             }
           })
@@ -173,6 +175,9 @@
     width: 100%;
     max-width: 100%;
     max-height: 100%;
+  }
+  .leaflet-control-attribution.leaflet-control {
+    display: none;
   }
 </style>
   

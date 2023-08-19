@@ -9,6 +9,7 @@
   import 'leaflet/dist/leaflet.css';
   import axios from 'axios';
   import shipMarkerIcon from '../../../public/images/ship-marker.png';
+  import harbourMarkerIcon from '../../../public/images/harbour-marker.png';
   
   export default {
     mounted() {
@@ -33,8 +34,14 @@
                 this.areas = data.data;
 
                 this.areas.forEach(area => {
+                    const markerIcon = L.icon({
+                        iconUrl: harbourMarkerIcon,
+                        iconSize: [32, 32],
+                    });
+
                     const coordinates = area.coordinates.map(coord => [parseFloat(coord.lat), parseFloat(coord.long)]);
-                    const polygon = L.polygon(coordinates).addTo(this.map);
+                    const harbourMarker = L.marker(coordinates[0],  { icon: markerIcon }).addTo(this.map);
+                    harbourMarker.bindPopup(area.name);
                 });
             }
           })
@@ -42,15 +49,25 @@
             console.error('Error fetching areas:', error);
           });
       },
-      handleAreaChange(event) {
-        const selectedId = parseInt(event.target.value);
-        const selectedArea = this.areas.find(area => area.id === selectedId);
-        if (selectedArea) {
-          const coordinates = selectedArea.coordinates.map(coord => [parseFloat(coord.lat), parseFloat(coord.long)]);
-          const polygon = L.polygon(coordinates).addTo(this.map);
-          this.map.fitBounds(polygon.getBounds());
+      async isWater(lat, long) {
+        const options = {
+          method: 'GET',
+          url: 'https://isitwater-com.p.rapidapi.com/',
+          params: {
+            latitude: lat,
+            longitude: long
+          },
+          headers: {
+            'X-RapidAPI-Key': '441d02dc1fmsh586a7611641acfcp150e16jsnbb053df88f2e',
+            'X-RapidAPI-Host': 'isitwater-com.p.rapidapi.com'
+          }
+        };
 
-          this.map.fitBounds(polygon.getBounds()).setZoom(16);
+        try {
+          const response = await axios.request(options);
+          return response.data.water
+        } catch (error) {
+          console.error('isWaterError:',error);
         }
       },
       fetchShips() {
@@ -67,15 +84,21 @@
           });
       },
       setShipMarkers() {
-        this.ships.forEach(ship => {
+        this.ships.forEach(async ship => {
           const markerIcon = L.icon({
             iconUrl: shipMarkerIcon,
             iconSize: [40, 40],
           });
-          const shipMarker = L.marker([parseFloat(ship.lat), parseFloat(ship.long)], { icon: markerIcon }).addTo(this.map);
-          shipMarker.bindPopup(ship.name);
+          
+          const shipCoordinates = [parseFloat(ship.lat), parseFloat(ship.long)];
+          const isWithinWater =this.isWater(parseFloat(ship.lat), parseFloat(ship.long));
+
+          if (isWithinWater) {
+            const shipMarker = L.marker(shipCoordinates, { icon: markerIcon }).addTo(this.map);
+            shipMarker.bindPopup(ship.name ? ship.name : 'Kapal Tidak Dikenal');
+          }
         });
-      },
+      }
     },
     data() {
       return {
@@ -99,6 +122,9 @@
     width: 100%;
     max-width: 100%;
     max-height: 100%;
+  }
+  .leaflet-control-attribution.leaflet-control {
+    display: none;
   }
 </style>
   

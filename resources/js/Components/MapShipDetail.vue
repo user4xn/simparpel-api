@@ -83,5 +83,8 @@
     max-width: 100%;
     max-height: 100%;
   }
+  .leaflet-control-attribution.leaflet-control {
+    display: none;
+  }
 </style>
   
