@@ -16,6 +16,7 @@ return new class extends Migration
             $table->tinyInteger('ship_id');
             $table->string('long');
             $table->string('lat');
+            $table->tinyInteger('is_mocked')->default(0);
             $table->timestamps();
         });
     }

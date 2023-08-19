@@ -67,6 +67,29 @@ class ShipController extends Controller
         ], 200);
     }
 
+    public function shipStatusByDeviceId(Request $request, $device_id)
+    {
+        $ship = Ship::where('device_id', $device_id)
+            ->select(
+                "name",
+                "device_id",
+                "firebase_token",
+                "long",
+                "lat",
+                "status",
+                "harbour_id",
+            )
+            ->with('harbourDetail')
+            ->first();  
+
+        return response()->json([
+            'status' => 'success',
+            'code' => 200,
+            'message'=> "Successfully get ships",
+            'data' => $ship
+        ], 200);
+    }
+
     public function nameShip(Request $request, $id)
     {
         DB::beginTransaction();
@@ -106,6 +129,7 @@ class ShipController extends Controller
                 $sll->ship_id = $ship->id;
                 $sll->lat = $request->lat;
                 $sll->long = $request->long;
+                $sll->is_mocked = $request->is_mocked ? 1 : 0;
                 $sll->save();
 
                 $nearestHarbourid = $this->checkNearestHarbour($request->lat, $request->long);
@@ -168,7 +192,7 @@ class ShipController extends Controller
 
                         $status = 'checkout';
                     } else {
-                        $status = 'idle';
+                        $status = 'out of scoope';
                     }
                     
                 }
@@ -176,7 +200,7 @@ class ShipController extends Controller
                 Ship::where('id', $ship->id)->update([
                     'lat' => $request->lat,
                     'long' => $request->long,
-                    'harbour_id' => $status != 'idle' ? $nearestHarbourid : null,
+                    'harbour_id' => $status != 'out of scoope' ? $nearestHarbourid : null,
                     'status' => $status
                 ]);
 

@@ -21,6 +21,7 @@ Route::get('/dashboard/overview', 'App\Http\Controllers\DashboardController@over
 
 Route::get('/ship', 'App\Http\Controllers\ShipController@ships');
 Route::get('/ship/{id}/status', 'App\Http\Controllers\ShipController@shipStatus');
+Route::get('/ship/{device_id}/device', 'App\Http\Controllers\ShipController@shipStatusByDeviceId');
 Route::post('/ship/upsert', 'App\Http\Controllers\ShipController@upsertShip');
 Route::put('/ship/{id}/name', 'App\Http\Controllers\ShipController@nameShip');
 
