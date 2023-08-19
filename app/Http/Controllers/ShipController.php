@@ -149,11 +149,10 @@ class ShipController extends Controller
                         ->orderBy('created_at', 'DESC')
                         ->first();
                     
-                    if($lastLogs != 'checkin') {
+                    if($lastLogs && $lastLogs->status != 'checkin') {
                         $parkingLog = new ParkingLog();
                         $parkingLog->ship_id = $ship->id;
                         $parkingLog->harbour_id = $nearestHarbourid;
-                        $parkingLog->ship_id = $ship->id;
                         $parkingLog->status = 'checkin';
                         $parkingLog->save();
 
@@ -165,6 +164,8 @@ class ShipController extends Controller
                         } catch (Exception $e){
                             Log::error('Push notification error: ' . $e->getMessage());
                         }
+                    } else {
+                        $isWater = $this->isWater($request->lat, $request->long);
                     }
                     
                     $status = 'checkin';
@@ -174,34 +175,42 @@ class ShipController extends Controller
                         ->first();
                     
                     if($lastLogs && $lastLogs->status == 'checkin') {
-                        $parkingLog = new ParkingLog();
-                        $parkingLog->ship_id = $ship->id;
-                        $parkingLog->harbour_id = $nearestHarbourid;
-                        $parkingLog->ship_id = $ship->id;
-                        $parkingLog->status = 'checkout';
-                        $parkingLog->save();
 
-                        try{
-                            $this->pushNotification([
-                                'title' => 'SIMPARPEL - CHECK OUT SUCCESS',
-                                'body' => 'Berhasil CHECK-OUT ('.ucwords($harbourData->name).') '.date('ymd-hi'),
-                            ], [$ship->firebase_token]);
-                        } catch (Exception $e){
-                            Log::error('Push notification error: ' . $e->getMessage());
+                        if($ship->on_ground != 1) {
+                            $isWater = $this->isWater($request->lat, $request->long);
+
+                            if($isWater){
+                                $parkingLog = new ParkingLog();
+                                $parkingLog->ship_id = $ship->id;
+                                $parkingLog->harbour_id = $nearestHarbourid;
+                                $parkingLog->status = 'checkout';
+                                $parkingLog->save();
+
+                                try{
+                                    $this->pushNotification([
+                                        'title' => 'SIMPARPEL - CHECK OUT SUCCESS',
+                                        'body' => 'Berhasil CHECK-OUT ('.ucwords($harbourData->name).') '.date('ymd-hi'),
+                                    ], [$ship->firebase_token]);
+                                } catch (Exception $e){
+                                    Log::error('Push notification error: ' . $e->getMessage());
+                                }
+                            }
+
+                            $status = $isWater ? $ship->status : 'checkout';
+                        } else {
+                            $status = $ship->status;
                         }
-
-                        $status = 'checkout';
                     } else {
                         $status = 'out of scoope';
                     }
-                    
                 }
                 
                 Ship::where('id', $ship->id)->update([
                     'lat' => $request->lat,
                     'long' => $request->long,
                     'harbour_id' => $status != 'out of scoope' ? $nearestHarbourid : null,
-                    'status' => $status
+                    'status' => $status,
+                    'on_ground' => $isWater ? ($isWater == true ? false : true) : $ship->on_ground,
                 ]);
 
             } else {
@@ -314,6 +323,36 @@ class ShipController extends Controller
     
         curl_close($ch);
         return ['success' => true, 'response' => json_decode($response, true)];
+    }
+
+    public function isWater($lat, $long)
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://".env('RAPIDAPI_ISITWATER_HOST')."/?latitude=".$lat."&longitude=".$long,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => [
+                "X-RapidAPI-Host: ".env('RAPIDAPI_ISITWATER_HOST'),
+                "X-RapidAPI-Key: ".env('RAPIDAPI_KEY')
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if($err){
+            Log::error('Check Water: ' . $err);
+        } else {
+            return json_decode($response)->water;
+        }
     }
     
 }
