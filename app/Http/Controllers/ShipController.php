@@ -24,6 +24,7 @@ class ShipController extends Controller
                 'lat' => $item->lat,
                 'long' => $item->long,
                 'status' => $item->status,
+                'on_ground' => $item->on_ground,
                 'harbour' => in_array($item->status, ['checkin', 'checkout']) && $item->harbourDetail ? $item->harbourDetail->name : null,
             ];
         });   
