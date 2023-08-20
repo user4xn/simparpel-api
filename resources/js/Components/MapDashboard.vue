@@ -49,27 +49,6 @@
             console.error('Error fetching areas:', error);
           });
       },
-      async isWater(lat, long) {
-        const options = {
-          method: 'GET',
-          url: 'https://isitwater-com.p.rapidapi.com/',
-          params: {
-            latitude: lat,
-            longitude: long
-          },
-          headers: {
-            'X-RapidAPI-Key': '441d02dc1fmsh586a7611641acfcp150e16jsnbb053df88f2e',
-            'X-RapidAPI-Host': 'isitwater-com.p.rapidapi.com'
-          }
-        };
-
-        try {
-          const response = await axios.request(options);
-          return response.data.water
-        } catch (error) {
-          console.error('isWaterError:',error);
-        }
-      },
       fetchShips() {
         axios.get(`/api/ship`)
           .then(response => {
@@ -91,12 +70,9 @@
           });
           
           const shipCoordinates = [parseFloat(ship.lat), parseFloat(ship.long)];
-          const isWithinWater =this.isWater(parseFloat(ship.lat), parseFloat(ship.long));
 
-          if (isWithinWater) {
-            const shipMarker = L.marker(shipCoordinates, { icon: markerIcon }).addTo(this.map);
-            shipMarker.bindPopup(ship.name ? ship.name : 'Kapal Tidak Dikenal');
-          }
+          const shipMarker = L.marker(shipCoordinates, { icon: markerIcon }).addTo(this.map);
+          shipMarker.bindPopup(ship.on_ground+'#',ship.name ? ship.name : 'Kapal Tidak Dikenal');
         });
       }
     },
