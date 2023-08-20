@@ -69,10 +69,12 @@
             iconSize: [40, 40],
           });
           
-          const shipCoordinates = [parseFloat(ship.lat), parseFloat(ship.long)];
+          if(ship.on_ground !== 1) {
+            const shipCoordinates = [parseFloat(ship.lat), parseFloat(ship.long)];
 
-          const shipMarker = L.marker(shipCoordinates, { icon: markerIcon }).addTo(this.map);
-          shipMarker.bindPopup(ship.on_ground+'#',ship.name ? ship.name : 'Kapal Tidak Dikenal');
+            const shipMarker = L.marker(shipCoordinates, { icon: markerIcon }).addTo(this.map);
+            shipMarker.bindPopup(ship.name ? ship.name : 'Kapal Tidak Dikenal');
+          }
         });
       }
     },

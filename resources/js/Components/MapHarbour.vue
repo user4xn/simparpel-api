@@ -56,8 +56,7 @@
                     });
                     const coordinates = area.coordinates.map(coord => [parseFloat(coord.lat), parseFloat(coord.long)]);
                     const polygon = L.polygon(coordinates).addTo(this.map);
-                    const center = polygon.getBounds().getCenter();
-                    const marker = L.marker(center,  { icon: markerIcon }).addTo(this.map);
+                    const marker = L.marker(coordinates[0],  { icon: markerIcon }).addTo(this.map);
                     marker.bindTooltip(area.name);
                 });
             }

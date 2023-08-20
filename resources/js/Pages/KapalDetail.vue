@@ -5,7 +5,7 @@ import { Head } from '@inertiajs/vue3';
 import { ref, onMounted,} from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import MapShipDetail from '@/Components/MapShipDetail.vue';
-import { IconChevronLeft } from '@tabler/icons-vue';
+import { IconChevronLeft, IconAlertTriangle} from '@tabler/icons-vue';
 import Swal from 'sweetalert2';
 
 const { id } = usePage().props;
@@ -59,24 +59,33 @@ const editName = async (shipId) => {
 
     <AuthenticatedLayout>
       <template #header>
-        <div class="inline-flex items-center">
-            <a :href="route('kapal')" class="me-3 inline-flex items-center px-3 py-1 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                <IconChevronLeft lass="mr-1 w-4 h-4 "/>
-            </a>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Detail Kapal <span v-if="isLoaded && ship.ship_detail"> ({{ ship.ship_detail.name ? ship.ship_detail.name : '?' }}) </span></h2>
+        <div class="md:inline-flex items-center w-full justify-between">
+            <div class="inline-flex items-center">
+              <a :href="route('kapal')" class="me-3 inline-flex items-center px-3 py-1 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                  <IconChevronLeft lass="mr-1 w-4 h-4 "/>
+              </a>
+              <h2 class="font-semibold text-xl text-gray-800 leading-tight">Detail Kapal <span v-if="isLoaded && ship.ship_detail"> ({{ ship.ship_detail.name ? ship.ship_detail.name : '?' }}) </span></h2>
+            </div>
         </div>
       </template>
-      
+      <div class="pt-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+          <div class="bg-red-500 text-white font-semibold uppercase overflow-hidden shadow-sm sm:rounded-lg p-4 lg:inline-flex items-center w-full justify-between">
+            <IconAlertTriangle/> Peringatan!! - kapal terdeteksi menggunakan fake gps - {{ ship.location_log[0].created_at }}
+          </div>
+        </div>
+      </div>
       <div class="py-12">
           <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
           <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <MapShipDetail v-if="isLoaded && ship.ship_detail" :shipDetail="ship.ship_detail"/>
+            <MapShipDetail v-if="isLoaded && ship.ship_detail" :shipDetail="ship.ship_detail" :logParking="ship.parking_log[0]"/>
             <div v-if="isLoaded && ship.ship_detail" class="grid md:grid-cols-3 gap-2 sm:gird-cols-1">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <h2 class="text-xl font-semibold mb-4">Detail Kapal</h2>
                     <div class="text-lg font-medium">{{ ship.ship_detail.name === '' || ship.ship_detail.name === null ? '(Unnamed Ship)' : ship.ship_detail.name }}</div>
                     <p class="text-gray-500 mt-2">Device ID: {{ ship.ship_detail.device_id }}</p>
-                    <p class="text-gray-500 mt-2">Status: <span class="font-bold uppercase" :class="{'text-green-400': ship.ship_detail.status === 'checkin', 'text-red-400': ship.ship_detail.status === 'checkout', 'text-gray-800': ship.ship_detail.status === 'out of scope',  'text-blue-500': ship.ship_detail.status === null }">{{ ship.ship_detail.status ? ship.ship_detail.status : 'BARU' }}</span></p>
+                    <p class="text-gray-500 mt-2" v-if="ship.ship_detail.on_ground === 1">Status: <span class="font-bold uppercase">offline</span></p>
+                    <p class="text-gray-500 mt-2" v-else>Status: <span class="font-bold uppercase" :class="{'text-green-400': ship.ship_detail.status === 'checkin', 'text-red-400': ship.ship_detail.status === 'checkout', 'text-gray-800': ship.ship_detail.status === 'out of scope',  'text-blue-500': ship.ship_detail.status === null }">{{ ship.ship_detail.status ? ship.ship_detail.status : 'BARU' }}</span></p>
                     <p class="text-gray-500 mt-2">Pelabuhan Terkini: {{ ship.ship_detail.harbour_detail ? ship.ship_detail.harbour_detail.name : '-' }}</p>
                     <p class="text-gray-500 mt-2">Update Lokasi Terakhir: {{ ship.location_log[0].created_at }}</p>
                     <button v-if="ship.ship_detail.name === '' || ship.ship_detail.name === null" @click="editName(ship.ship_detail.id, 'New Name')" class="mt-6 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">

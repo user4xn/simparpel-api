@@ -179,7 +179,6 @@ class ShipController extends Controller
                         ->first();
                     
                     if($lastLogs && $lastLogs->status == 'checkin') {
-
                         if($ship->on_ground != 1) {
                             $isWater = $this->isWater($request->lat, $request->long);
 
@@ -204,6 +203,7 @@ class ShipController extends Controller
 
                             $status = $isWater ? 'checkout' : $ship->status;
                         } else {
+                            $isWater = false;
                             $status = $ship->status;
                         }
                     } else {

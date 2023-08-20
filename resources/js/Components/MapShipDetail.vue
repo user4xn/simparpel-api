@@ -15,7 +15,8 @@
 
   export default {
     props: {
-        shipDetail: Object // Define the prop to accept ship details
+        shipDetail: Object, // Define the prop to accept ship details
+        logParking: Object // Define the prop to accept ship details
     },
 
     mounted() {
@@ -25,7 +26,11 @@
     },
     methods: {
         initializeMap() {
-        this.map = L.map('map').setView([this.shipDetail.lat, this.shipDetail.long], 15);
+        if(this.shipDetail.on_ground !== 1) {
+          this.map = L.map('map').setView([this.shipDetail.lat, this.shipDetail.long], 15);
+        } else {
+          this.map = L.map('map').setView([this.logParking.lat, this.logParking.long], 15);
+        }
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -54,11 +59,21 @@
                 iconUrl: shipMarkerIcon,
                 iconSize: [40, 40],
             });
-            const shipMarker = L.marker([this.shipDetail.lat, this.shipDetail.long], { icon: markerIcon }).addTo(this.map);
-            shipMarker.bindPopup(this.shipDetail.name);
+
+            if(this.shipDetail.on_ground !== 1) {
+              const shipMarker = L.marker([this.shipDetail.lat, this.shipDetail.long], { icon: markerIcon }).addTo(this.map);
+              shipMarker.bindPopup(this.shipDetail.name);
+            } else {
+              const shipMarker = L.marker([this.logParking.lat, this.logParking.long], { icon: markerIcon }).addTo(this.map);
+              shipMarker.bindPopup(this.shipDetail.name);
+            }
         },
         reFocusShipMarker() {
-            this.map.setView([this.shipDetail.lat, this.shipDetail.long], 15);
+          if(this.shipDetail.on_ground !== 1) {
+            this.map.setView([this.shipDetail.lat, this.shipDetail.long], 16);
+          } else {
+            this.map.setView([this.logParking.lat, this.logParking.long], 16);
+          }
         }
     },
     data() {
