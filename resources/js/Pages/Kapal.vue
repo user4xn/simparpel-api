@@ -89,7 +89,7 @@ const editName = async (shipId, currentName) => {
                                 {{ ship.name ? ship.name : '-'}}
                                 </td>
                                 <td class="px-6 py-4 uppercase">
-                                {{ ship.status ? ship.status : 'BARU'}}
+                                {{ ship.on_ground === 1 ? 'OFFLINE' : (ship.status ? ship.status : 'BARU')}}
                                 </td>
                                 <td class="px-6 py-4">
                                 {{ ship.harbour ? ship.harbour : '-' }}

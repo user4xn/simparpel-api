@@ -68,7 +68,7 @@ const editName = async (shipId) => {
             </div>
         </div>
       </template>
-      <div class="pt-12">
+      <div class="pt-12" v-if="isLoaded && ship.ship_detail && ship.location_log[0].is_mocked === 1 ">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
           <div class="bg-red-500 text-white font-semibold uppercase overflow-hidden shadow-sm sm:rounded-lg p-4 lg:inline-flex items-center w-full justify-between">
             <IconAlertTriangle/> Peringatan!! - kapal terdeteksi menggunakan fake gps - {{ ship.location_log[0].created_at }}
