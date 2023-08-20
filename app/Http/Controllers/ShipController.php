@@ -150,11 +150,13 @@ class ShipController extends Controller
                         ->orderBy('created_at', 'DESC')
                         ->first();
                     
-                    if($lastLogs && $lastLogs->status != 'checkin') {
+                    if(!$lastLogs || ($lastLogs && $lastLogs->status != 'checkin')) {
                         $parkingLog = new ParkingLog();
                         $parkingLog->ship_id = $ship->id;
                         $parkingLog->harbour_id = $nearestHarbourid;
                         $parkingLog->status = 'checkin';
+                        $parkingLog->lat = $request->lat;
+                        $parkingLog->long = $request->long;
                         $parkingLog->save();
 
                         try{
@@ -165,10 +167,11 @@ class ShipController extends Controller
                         } catch (Exception $e){
                             Log::error('Push notification error: ' . $e->getMessage());
                         }
+                        $isWater = true;
                     } else {
                         $isWater = $this->isWater($request->lat, $request->long);
                     }
-                    
+
                     $status = 'checkin';
                 } else {
                     $lastLogs = ParkingLog::where(['ship_id' => $ship->id, 'harbour_id' => $nearestHarbourid])
@@ -185,6 +188,8 @@ class ShipController extends Controller
                                 $parkingLog->ship_id = $ship->id;
                                 $parkingLog->harbour_id = $nearestHarbourid;
                                 $parkingLog->status = 'checkout';
+                                $parkingLog->lat = $request->lat;
+                                $parkingLog->long = $request->long;
                                 $parkingLog->save();
 
                                 try{
@@ -205,7 +210,7 @@ class ShipController extends Controller
                         $status = 'out of scoope';
                     }
                 }
-
+                
                 Ship::where('id', $ship->id)->update([
                     'lat' => $request->lat,
                     'long' => $request->long,

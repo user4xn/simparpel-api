@@ -16,6 +16,8 @@ return new class extends Migration
             $table->tinyInteger('ship_id');
             $table->tinyInteger('harbour_id');
             $table->enum('status', ['checkin', 'checkout']);
+            $table->string('lat');
+            $table->string('long');
             $table->timestamps();
         });
     }
