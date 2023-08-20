@@ -197,7 +197,7 @@ class ShipController extends Controller
                                 }
                             }
 
-                            $status = $isWater ? $ship->status : 'checkout';
+                            $status = $isWater ? 'checkout' : $ship->status;
                         } else {
                             $status = $ship->status;
                         }
