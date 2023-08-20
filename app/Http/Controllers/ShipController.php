@@ -205,13 +205,13 @@ class ShipController extends Controller
                         $status = 'out of scoope';
                     }
                 }
-                
+
                 Ship::where('id', $ship->id)->update([
                     'lat' => $request->lat,
                     'long' => $request->long,
                     'harbour_id' => $status != 'out of scoope' ? $nearestHarbourid : null,
                     'status' => $status,
-                    'on_ground' => $isWater ? ($isWater == true ? false : true) : $ship->on_ground,
+                    'on_ground' => $isWater == true ? 0 : 1,
                 ]);
 
             } else {
