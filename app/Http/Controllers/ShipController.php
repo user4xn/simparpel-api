@@ -72,16 +72,25 @@ class ShipController extends Controller
     {
         $ship = Ship::where('device_id', $device_id)
             ->select(
-                "name",
-                "device_id",
-                "firebase_token",
-                "long",
-                "lat",
-                "status",
-                "harbour_id",
+                'id',
+                'name',
+                'device_id',
+                'firebase_token',
+                'long',
+                'lat',
+                'status',
+                'harbour_id',
             )
             ->with('harbourDetail')
             ->first();  
+
+        $logParking = ParkingLog::where('ship_id', $ship->id)
+            ->join('harbours', 'harbours.id', '=', 'parking_logs.harbour_id')
+            ->select('parking_logs.*', 'harbours.name as harbour_name')
+            ->orderBy('harbours.created_at', 'DESC')
+            ->get();
+
+        $ship['parking_log'] = $logParking ?? [];
 
         return response()->json([
             'status' => 'success',
@@ -179,7 +188,6 @@ class ShipController extends Controller
                         ->first();
                     
                     if($lastLogs && $lastLogs->status == 'checkin') {
-
                         if($ship->on_ground != 1) {
                             $isWater = $this->isWater($request->lat, $request->long);
 
@@ -204,6 +212,7 @@ class ShipController extends Controller
 
                             $status = $isWater ? 'checkout' : $ship->status;
                         } else {
+                            $isWater = false;
                             $status = $ship->status;
                         }
                     } else {
