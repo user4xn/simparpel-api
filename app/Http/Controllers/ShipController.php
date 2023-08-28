@@ -216,6 +216,7 @@ class ShipController extends Controller
                             $status = $ship->status;
                         }
                     } else {
+                        $isWater = true;
                         $status = 'out of scoope';
                     }
                 }
