@@ -80,6 +80,7 @@ class ShipController extends Controller
                 'lat',
                 'status',
                 'harbour_id',
+                'on_ground',
             )
             ->with('harbourDetail')
             ->first();  
