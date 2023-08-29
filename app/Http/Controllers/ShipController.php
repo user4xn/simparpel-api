@@ -51,7 +51,7 @@ class ShipController extends Controller
         $logParking = ParkingLog::where('ship_id', $id)
             ->join('harbours', 'harbours.id', '=', 'parking_logs.harbour_id')
             ->select('parking_logs.*', 'harbours.name as harbour_name')
-            ->orderBy('harbours.created_at', 'DESC')
+            ->orderBy('parking_logs.created_at', 'DESC')
             ->get();
 
         $fetch = [
@@ -170,7 +170,7 @@ class ShipController extends Controller
 
                         try{
                             $this->pushNotification([
-                                'title' => 'SIMPARPEL - CHECK IN SUCCESS',
+                                'title' => 'SIMPEL - CHECK IN SUCCESS',
                                 'body' => 'Berhasil CHECK-IN ('.ucwords($harbourData->name).') '.date('ymd-hi'),
                             ], [$ship->firebase_token]);
                         } catch (Exception $e){
@@ -202,7 +202,7 @@ class ShipController extends Controller
 
                                 try{
                                     $this->pushNotification([
-                                        'title' => 'SIMPARPEL - CHECK OUT SUCCESS',
+                                        'title' => 'SIMPEL - CHECK OUT SUCCESS',
                                         'body' => 'Berhasil CHECK-OUT ('.ucwords($harbourData->name).') '.date('ymd-hi'),
                                     ], [$ship->firebase_token]);
                                 } catch (Exception $e){
@@ -216,25 +216,32 @@ class ShipController extends Controller
                             $status = $ship->status;
                         }
                     } else {
-                        $isWater = true;
-                        $status = 'out of scoope';
+                        if($ship->on_ground == 0) {
+                            $isWater = $this->isWater($request->lat, $request->long);
+                        } else {
+                            $isWater = true;
+                        }
+                        $status = 'out of scope';
                     }
                 }
                 
                 Ship::where('id', $ship->id)->update([
                     'lat' => $request->lat,
                     'long' => $request->long,
-                    'harbour_id' => $status != 'out of scoope' ? $nearestHarbourid : null,
+                    'harbour_id' => $status != 'out of scope' ? $nearestHarbourid : null,
                     'status' => $status,
                     'on_ground' => $isWater == true ? 0 : 1,
                 ]);
 
             } else {
+                $isWater = $this->isWater($request->lat, $request->long);
+
                 $ship = new Ship();
                 $ship->device_id = $request->device_id;
                 $ship->firebase_token = $request->firebase_token;
                 $ship->lat = $request->lat;
                 $ship->long = $request->long;
+                $ship->on_ground = $isWater == true ? 0 : 1;
                 $ship->save();
 
                 $sll = new ShipLocationLog();
