@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Sistem Parkir Pelabuhan | SIMPARPEL') }}</title>
+        <title inertia>{{ config('app.name', 'Sistem Monitoring Pelabuhan | SIMPEL') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

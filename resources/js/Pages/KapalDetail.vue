@@ -78,23 +78,23 @@ const editName = async (shipId) => {
       <div class="py-12">
           <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
           <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <MapShipDetail v-if="isLoaded && ship.ship_detail" :shipDetail="ship.ship_detail" :logParking="ship.parking_log[0]"/>
+            <MapShipDetail v-if="isLoaded && ship.ship_detail" :shipDetail="ship.ship_detail" :logParking="ship.parking_log[0]" :locationLog="ship.location_log[1]"/>
             <div v-if="isLoaded && ship.ship_detail" class="grid md:grid-cols-3 gap-2 sm:gird-cols-1">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <h2 class="text-xl font-semibold mb-4">Detail Kapal</h2>
                     <div class="text-lg font-medium">{{ ship.ship_detail.name === '' || ship.ship_detail.name === null ? '(Unnamed Ship)' : ship.ship_detail.name }}</div>
                     <p class="text-gray-500 mt-2">Device ID: {{ ship.ship_detail.device_id }}</p>
                     <p class="text-gray-500 mt-2" v-if="ship.ship_detail.on_ground === 1">Status: <span class="font-bold uppercase">offline</span></p>
-                    <p class="text-gray-500 mt-2" v-else>Status: <span class="font-bold uppercase" :class="{'text-green-400': ship.ship_detail.status === 'checkin', 'text-red-400': ship.ship_detail.status === 'checkout', 'text-gray-800': ship.ship_detail.status === 'out of scope',  'text-blue-500': ship.ship_detail.status === null }">{{ ship.ship_detail.status ? ship.ship_detail.status : 'BARU' }}</span></p>
+                    <p class="text-gray-500 mt-2" v-else>Status: <span class="font-bold uppercase" :class="{'text-green-400': ship.ship_detail.status === 'checkin', 'text-red-400': ship.ship_detail.status === 'checkout', 'text-yellow-500': ship.ship_detail.status === 'out of scope',  'text-blue-500': ship.ship_detail.status === null }">{{ ship.ship_detail.status ? ship.ship_detail.status : 'BARU' }}</span></p>
                     <p class="text-gray-500 mt-2">Pelabuhan Terkini: {{ ship.ship_detail.harbour_detail ? ship.ship_detail.harbour_detail.name : '-' }}</p>
                     <p class="text-gray-500 mt-2">Update Lokasi Terakhir: {{ ship.location_log[0].created_at }}</p>
-                    <button v-if="ship.ship_detail.name === '' || ship.ship_detail.name === null" @click="editName(ship.ship_detail.id, 'New Name')" class="mt-6 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        Beri Nama
+                    <button @click="editName(ship.ship_detail.id, 'New Name')" class="mt-6 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        {{ ship.ship_detail.name === '' || ship.ship_detail.name === null ? 'Beri Nama' : 'Ubah Nama' }}
                     </button>
                 </div>
                 <div class="p-6 bg-white border-b border-gray-200 col-span-2">
                     <div class="bg-gray-800 rounded-md p-3 text-gray-300 max-h-full">
-                        <h2 class="text-xl font-semibold mb-4">Log Parkir Kapal</h2>
+                        <h2 class="text-xl font-semibold mb-4">Log Labuh Kapal</h2>
                         <ul class="max-h-48 overflow-y-scroll">
                             <span v-if="ship.parking_log.length === 0"> - </span>
                             <li v-for="log in ship.parking_log" :key="log.id" class="flex items-center justify-between">

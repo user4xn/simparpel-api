@@ -9,6 +9,7 @@
   import 'leaflet/dist/leaflet.css';
   import axios from 'axios';
   import shipMarkerIcon from '../../../public/images/ship-marker.png';
+  import fishermanMarkerIcon from '../../../public/images/fisherman-marker.png';
   import harbourMarkerIcon from '../../../public/images/harbour-marker.png';
   
   export default {
@@ -66,7 +67,12 @@
         this.ships.forEach(async ship => {
           const markerIcon = L.icon({
             iconUrl: shipMarkerIcon,
-            iconSize: [40, 40],
+            iconSize: [20, 40],
+          });
+
+          const fisherMarkerIcon = L.icon({
+            iconUrl: fishermanMarkerIcon,
+            iconSize: [20, 30],
           });
           
           if(ship.on_ground !== 1) {
@@ -74,6 +80,11 @@
 
             const shipMarker = L.marker(shipCoordinates, { icon: markerIcon }).addTo(this.map);
             shipMarker.bindPopup(ship.name ? ship.name : 'Kapal Tidak Dikenal');
+          } else {
+            const shipCoordinates = [parseFloat(ship.lat), parseFloat(ship.long)];
+
+            const shipMarker = L.marker(shipCoordinates, { icon: fisherMarkerIcon }).addTo(this.map);
+            shipMarker.bindPopup(ship.name ? 'Device : '+ship.name : 'Device : '+ship.device_id);
           }
         });
       }

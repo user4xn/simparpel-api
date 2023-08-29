@@ -12,10 +12,12 @@
   import 'leaflet/dist/leaflet.css';
   import axios from 'axios';
   import shipMarkerIcon from '../../../public/images/ship-marker.png';
+  import fishermanMarkerIcon from '../../../public/images/fisherman-marker.png';
 
   export default {
     props: {
         shipDetail: Object, // Define the prop to accept ship details
+        locationLog: Object, // Define the prop to accept ship details
         logParking: Object // Define the prop to accept ship details
     },
 
@@ -29,7 +31,11 @@
         if(this.shipDetail.on_ground !== 1) {
           this.map = L.map('map').setView([this.shipDetail.lat, this.shipDetail.long], 15);
         } else {
-          this.map = L.map('map').setView([this.logParking.lat, this.logParking.long], 15);
+          if(this.logParking === undefined) {
+            this.map = L.map('map').setView([this.shipDetail.lat, this.shipDetail.long], 15);
+          } else {
+            this.map = L.map('map').setView([this.logParking.lat, this.logParking.long], 15);
+          }
         }
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -57,22 +63,42 @@
         initializeShipMarker() {
             const markerIcon = L.icon({
                 iconUrl: shipMarkerIcon,
-                iconSize: [40, 40],
+                iconSize: [20, 40],
+            });
+
+            const fisherMarkerIcon = L.icon({
+              iconUrl: fishermanMarkerIcon,
+              iconSize: [20, 30],
             });
 
             if(this.shipDetail.on_ground !== 1) {
               const shipMarker = L.marker([this.shipDetail.lat, this.shipDetail.long], { icon: markerIcon }).addTo(this.map);
-              shipMarker.bindPopup(this.shipDetail.name);
+              shipMarker.bindPopup(this.shipDetail.name ? this.shipDetail.name : 'Unnamed Ship');
             } else {
-              const shipMarker = L.marker([this.logParking.lat, this.logParking.long], { icon: markerIcon }).addTo(this.map);
-              shipMarker.bindPopup(this.shipDetail.name);
+              if(this.logParking !== undefined) {
+                if(this.logParking.status === 'checkin') {
+                  const shipMarker = L.marker([this.logParking.lat, this.logParking.long], { icon: markerIcon }).addTo(this.map);
+                  shipMarker.bindPopup(this.shipDetail.name ? this.shipDetail.name : 'Unnamed Ship');
+                }
+              }
+
+              const fishermanMarker = L.marker([this.shipDetail.lat, this.shipDetail.long], { icon: fisherMarkerIcon }).addTo(this.map);
+              fishermanMarker.bindPopup(this.shipDetail.name ? 'Device : '+this.shipDetail.name : 'Device : '+this.shipDetail.device_id);
             }
         },
         reFocusShipMarker() {
           if(this.shipDetail.on_ground !== 1) {
             this.map.setView([this.shipDetail.lat, this.shipDetail.long], 16);
           } else {
-            this.map.setView([this.logParking.lat, this.logParking.long], 16);
+            if(this.logParking !== undefined) {
+              if(this.logParking.status === 'checkin') {
+                this.map.setView([this.logParking.lat, this.logParking.long], 16);
+              } else {
+                this.map.setView([this.shipDetail.lat, this.shipDetail.long], 16); 
+              }
+            } else {
+              this.map.setView([this.shipDetail.lat, this.shipDetail.long], 16);
+            }
           }
         }
     },

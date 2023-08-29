@@ -6,7 +6,7 @@
       </select>
       <div id="map" :style="{ width: '100%', height: '600px', cursor: drawingMode ? 'crosshair' : 'default' }"></div>
       <div class="grid grid-cols-3 gap-4 p-3 absolute z-[1000] left-2 bottom-2">
-          <button v-if="!drawingMode" @click="startDrawingLayer" class="py-2 px-4 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+          <button v-if="!drawingMode" @click="startDrawingLayer" class="hidden py-2 px-4 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
             Tambah Pelabuhan
           </button>
           <button v-if="drawingMode" @click="sendNewArea" class="py-2 px-4 bg-indigo-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:ring-offset-2 transition ease-in-out duration-150">

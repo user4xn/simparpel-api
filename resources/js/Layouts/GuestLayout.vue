@@ -10,7 +10,7 @@ import { Link } from '@inertiajs/vue3';
                 <ApplicationLogo class="w-20 h-20 fill-current text-gray-900" />
                 <div class="ms-2 font-sanserif antialiased text-4xl flex flex-row">
                     <div class="font-extrabold">SIM</div>
-                    <div class="font-extrabold border-b-2 border-indigo-500">PARPEL</div>
+                    <div class="font-extrabold border-b-2 border-indigo-500">PEL</div>
                 </div> 
             </Link>
         </div>
