@@ -81,12 +81,12 @@
             const shipCoordinates = [parseFloat(ship.lat), parseFloat(ship.long)];
 
             const shipMarker = L.marker(shipCoordinates, { icon: markerIcon }).addTo(this.map);
-            shipMarker.bindPopup(ship.name ? '<center>'+ship.name+'<br>('+status.toUpperCase()+')</center>' : '<center>'+ship.device_id+'<br>('+status.toUpperCase()+')</center>');
+            shipMarker.bindPopup(ship.name ? '<center>'+ship.name+'<br>Status : ('+status.toUpperCase()+')</center>' : '<center>'+ship.device_id+'<br>Status : ('+status.toUpperCase()+')</center>');
           } else {
             const shipCoordinates = [parseFloat(ship.lat), parseFloat(ship.long)];
 
             const shipMarker = L.marker(shipCoordinates, { icon: fisherMarkerIcon }).addTo(this.map);
-            shipMarker.bindPopup(ship.name ? '<center>Device : '+ship.name+'<br>('+status.toUpperCase()+')</center>' : '<center>Device : '+ship.device_id+'<br>('+status.toUpperCase()+')</center>');
+            shipMarker.bindPopup(ship.name ? '<center>Device : '+ship.name+'<br>Status : ('+status.toUpperCase()+')</center>' : '<center>Device : '+ship.device_id+'<br>Status : ('+status.toUpperCase()+')</center>');
           }
         });
       }
