@@ -75,16 +75,18 @@
             iconSize: [20, 30],
           });
           
+          const status = ship.on_ground === 1 ? 'OFFLINE' : ship.status;
+
           if(ship.on_ground !== 1) {
             const shipCoordinates = [parseFloat(ship.lat), parseFloat(ship.long)];
 
             const shipMarker = L.marker(shipCoordinates, { icon: markerIcon }).addTo(this.map);
-            shipMarker.bindPopup(ship.name ? ship.name : 'Kapal Tidak Dikenal');
+            shipMarker.bindPopup(ship.name ? ship.name+' ('+status.toUpperCase()+')' : ship.device_id+' ('+status.toUpperCase()+')');
           } else {
             const shipCoordinates = [parseFloat(ship.lat), parseFloat(ship.long)];
 
             const shipMarker = L.marker(shipCoordinates, { icon: fisherMarkerIcon }).addTo(this.map);
-            shipMarker.bindPopup(ship.name ? 'Device : '+ship.name : 'Device : '+ship.device_id);
+            shipMarker.bindPopup(ship.name ? 'Device : '+ship.name+' ('+status.toUpperCase()+')' : 'Device : '+ship.device_id+' ('+status.toUpperCase()+')');
           }
         });
       }
