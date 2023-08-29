@@ -85,6 +85,15 @@ class ShipController extends Controller
             ->with('harbourDetail')
             ->first();  
 
+        if(!$ship) {
+            return response()->json([
+                'status' => 'failed',
+                'code' => 400,
+                'message'=> "Device ID Not Found",
+                'data' => null
+            ], 400);
+        }
+
         $logParking = ParkingLog::where('ship_id', $ship->id)
             ->join('harbours', 'harbours.id', '=', 'parking_logs.harbour_id')
             ->select('parking_logs.*', 'harbours.name as harbour_name')
