@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('firebase_token');
             $table->string('long');
             $table->string('lat');
-            $table->enum('status', ['checkin', 'checkout', 'out of scoope'])->nullable();
+            $table->enum('status', ['checkin', 'checkout', 'out of scope'])->nullable();
             $table->tinyInteger('harbour_id')->nullable();
             $table->tinyInteger('on_ground')->default(0);
             $table->timestamps();
