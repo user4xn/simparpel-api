@@ -226,11 +226,7 @@ class ShipController extends Controller
                             $status = $ship->status;
                         }
                     } else {
-                        if($ship->on_ground == 0) {
-                            $isWater = $this->isWater($request->lat, $request->long);
-                        } else {
-                            $isWater = true;
-                        }
+                        $isWater = $this->isWater($request->lat, $request->long);
                         $status = 'out of scope';
                     }
                 }
