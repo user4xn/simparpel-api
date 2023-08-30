@@ -31,10 +31,14 @@
         if(this.shipDetail.on_ground !== 1) {
           this.map = L.map('map').setView([this.shipDetail.lat, this.shipDetail.long], 15);
         } else {
-          if(this.logParking === undefined) {
-            this.map = L.map('map').setView([this.shipDetail.lat, this.shipDetail.long], 15);
+          if(this.logParking !== undefined) {
+            if(this.logParking.status === 'checkin') {
+              this.map.setView([this.logParking.lat, this.logParking.long], 15);
+            } else {
+              this.map.setView([this.shipDetail.lat, this.shipDetail.long], 15); 
+            }
           } else {
-            this.map = L.map('map').setView([this.logParking.lat, this.logParking.long], 15);
+            this.map = L.map('map').setView([this.shipDetail.lat, this.shipDetail.long], 15);
           }
         }
 
