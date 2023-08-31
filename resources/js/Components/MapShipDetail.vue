@@ -33,9 +33,9 @@
         } else {
           if(this.logParking !== undefined) {
             if(this.logParking.status === 'checkin') {
-              this.map.setView([this.logParking.lat, this.logParking.long], 15);
+              this.map = L.map('map').setView([this.logParking.lat, this.logParking.long], 15);
             } else {
-              this.map.setView([this.shipDetail.lat, this.shipDetail.long], 15); 
+              this.map = L.map('map').setView([this.shipDetail.lat, this.shipDetail.long], 15); 
             }
           } else {
             this.map = L.map('map').setView([this.shipDetail.lat, this.shipDetail.long], 15);
