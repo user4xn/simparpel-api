@@ -20,6 +20,7 @@
         "vue": "^3.2.41"
     },
     "dependencies": {
+        "@tabler/icons": "^2.33.0",
         "@tabler/icons-vue": "^2.30.0",
         "datatables.net": "^1.13.6",
         "datatables.net-bs5": "^1.13.6",

@@ -68,7 +68,7 @@ const editName = async (shipId) => {
             </div>
         </div>
       </template>
-      <div class="pt-12" v-if="isLoaded && ship.ship_detail && ship.location_log[0].is_mocked === 1 ">
+      <div class="pt-12" v-if="isLoaded && ship.ship_detail && ship.location_log?.[0]?.is_mocked === 1 ">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
           <div class="bg-red-500 text-white font-semibold uppercase overflow-hidden shadow-sm sm:rounded-lg p-4 lg:inline-flex items-center w-full justify-between">
             <IconAlertTriangle/> Peringatan!! - kapal terdeteksi menggunakan fake gps - {{ ship.location_log[0].created_at }}
@@ -87,7 +87,7 @@ const editName = async (shipId) => {
                     <p class="text-gray-500 mt-2" v-if="ship.ship_detail.on_ground === 1">Status: <span class="font-bold uppercase">offline</span></p>
                     <p class="text-gray-500 mt-2" v-else>Status: <span class="font-bold uppercase" :class="{'text-green-400': ship.ship_detail.status === 'checkin', 'text-red-400': ship.ship_detail.status === 'checkout', 'text-yellow-500': ship.ship_detail.status === 'out of scope',  'text-blue-500': ship.ship_detail.status === null }">{{ ship.ship_detail.status ? ship.ship_detail.status : 'BARU' }}</span></p>
                     <p class="text-gray-500 mt-2">Pelabuhan Terkini: {{ ship.ship_detail.harbour_detail ? ship.ship_detail.harbour_detail.name : '-' }}</p>
-                    <p class="text-gray-500 mt-2">Update Lokasi Terakhir: {{ ship.location_log[0].created_at }}</p>
+                    <p class="text-gray-500 mt-2">Update Lokasi Terakhir: {{ ship.location_log?.[0]?.created_at }}</p>
                     <button @click="editName(ship.ship_detail.id, 'New Name')" class="mt-6 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         {{ ship.ship_detail.name === '' || ship.ship_detail.name === null ? 'Beri Nama' : 'Ubah Nama' }}
                     </button>

@@ -38,6 +38,9 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('kapal')" :active="route().current('kapal')">
                                     Kapal
                                 </NavLink>
+                                <NavLink :href="route('setting')" :active="route().current('setting')">
+                                    Pengaturan
+                                </NavLink>
                             </div>
                         </div>
 

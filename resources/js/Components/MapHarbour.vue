@@ -54,10 +54,15 @@
                         iconUrl: harbourMarker,
                         iconSize: [32, 32],
                     });
-                    const coordinates = area.coordinates.map(coord => [parseFloat(coord.lat), parseFloat(coord.long)]);
-                    const polygon = L.polygon(coordinates).addTo(this.map);
-                    const marker = L.marker(coordinates[0],  { icon: markerIcon }).addTo(this.map);
-                    marker.bindTooltip(area.name);
+
+                    // fix jika tidak ada area coordinate pada pelabuhan
+                    if(area.coordinates.length){
+                      const coordinates = area.coordinates.map(coord => [parseFloat(coord.lat), parseFloat(coord.long)]);
+                      const polygon = L.polygon(coordinates).addTo(this.map);
+                      const marker = L.marker(coordinates[0],  { icon: markerIcon }).addTo(this.map);
+                      marker.bindTooltip(area.name);
+                    } 
+                    
                 });
             }
           })
