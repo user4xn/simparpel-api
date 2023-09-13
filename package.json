@@ -22,8 +22,10 @@
     "dependencies": {
         "@tabler/icons": "^2.33.0",
         "@tabler/icons-vue": "^2.30.0",
+        "@vuepic/vue-datepicker": "^6.1.0",
         "datatables.net": "^1.13.6",
         "datatables.net-bs5": "^1.13.6",
+        "leaflet-polylinedecorator": "^1.6.0",
         "sweetalert2": "^11.7.23",
         "tabler-icons": "^1.35.0",
         "vue-tables-2": "^2.3.5"

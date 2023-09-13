@@ -26,6 +26,10 @@ Route::get('/ship/{device_id}/device', 'App\Http\Controllers\ShipController@ship
 Route::post('/ship/upsert', 'App\Http\Controllers\ShipController@upsertShip');
 Route::put('/ship/{id}/name', 'App\Http\Controllers\ShipController@nameShip');
 
+// history kapal
+Route::get('/ship/{id}/history/available', 'App\Http\Controllers\ShipHistoryController@available_date');
+Route::get('/ship/{id}/history/{date}', 'App\Http\Controllers\ShipHistoryController@history_by_date');
+
 // menu pelabuhan
 Route::get('/harbour', 'App\Http\Controllers\HarbourController@harbours');
 Route::post('/harbour/upsert', 'App\Http\Controllers\HarbourController@upsertHarbour');
