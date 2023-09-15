@@ -22,7 +22,6 @@ Route::get('/dashboard/overview', 'App\Http\Controllers\DashboardController@over
 // menu kapal
 Route::get('/ship', 'App\Http\Controllers\ShipController@ships');
 Route::get('/ship/{id}/status', 'App\Http\Controllers\ShipController@shipStatus');
-Route::get('/ship/{device_id}/device', 'App\Http\Controllers\ShipController@shipStatusByDeviceId');
 Route::post('/ship/upsert', 'App\Http\Controllers\ShipController@upsertShip');
 Route::put('/ship/{id}/name', 'App\Http\Controllers\ShipController@nameShip');
 
@@ -39,3 +38,10 @@ Route::delete('/harbour/{id}/delete', 'App\Http\Controllers\HarbourController@de
 Route::get('/setting/fetch', 'App\Http\Controllers\SettingController@fetchAllSetting');
 Route::post('/setting/update', 'App\Http\Controllers\SettingController@updateAllSetting');
 Route::delete('/setting/reset', 'App\Http\Controllers\SettingController@resetAllSetting');
+
+// buat aplikasi
+Route::get('/device/fetch_preferences', 'App\Http\Controllers\SettingController@fetchLiteSetting');
+Route::get('/ship/{device_id}/device', 'App\Http\Controllers\ShipController@shipStatusByDeviceId');
+Route::post('/ship/upsert', 'App\Http\Controllers\ShipController@upsertShip');
+
+

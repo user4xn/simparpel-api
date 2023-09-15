@@ -52,7 +52,27 @@ class SettingController extends Controller
                 'data' => ''
             ], 400);
         } // end try
+    } // end func
 
+
+    public function fetchLiteSetting(Request $request)
+    {
+        // ambil setting dengan label 'device'
+        $appSetting = AppSetting::select('name', 'value')->where('label', 'device')
+            ->get();
+
+        $data = [];
+
+        foreach ($appSetting as $key => $value):
+            $data[$value['name']] = $value['value'];
+        endforeach;
+
+        return response()->json([
+            'status' => 'success',
+            'code' => 200,
+            'message' => "Successfully get data",
+            'data' => $data
+        ], 200);
     } // end func
 
     public function resetAllSetting(Request $request)

@@ -15,13 +15,13 @@ class ShipHistoryController extends Controller
 {
     public function history_by_date(Request $request, $id, $date)
     {
-        $logs = ShipLocationLog::select('id', 'lat', 'long')->where('ship_id', intval($id))
+        $logs = ShipLocationLog::select( 'lat', 'long')->where('ship_id', intval($id))
+            ->where('on_ground', 0)
             ->whereRaw('DATE(created_at) = ?', [date('Y-m-d', strtotime($date))])
-            ->groupBy('lat', 'long', 'id')
-            ->orderBy('id', 'ASC')
-            ->get();
+            ->groupBy('lat', 'long')
+            ->get()->toArray();
 
-        $fetch = ['id' => $id, 'date' => $date, 'history' => $logs];
+        $fetch = ['id' => $id, 'date' => $date, 'history' => array_reverse($logs)];
         return response()->json([
             'status' => 'success',
             'code' => 200,

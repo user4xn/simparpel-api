@@ -7,8 +7,9 @@ import { usePage } from "@inertiajs/vue3";
 import MapShipDetail from "@/Components/MapShipDetail.vue";
 import MapShipDetailHistory from "@/Components/MapShipDetailHistory.vue";
 import { IconChevronLeft, IconAlertTriangle } from "@tabler/icons-vue";
-import Datepicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
+import Datepicker from "@vuepic/vue-datepicker";
+import {DateTime} from "luxon"
+import "@vuepic/vue-datepicker/dist/main.css";
 import Swal from "sweetalert2";
 
 const { id } = usePage().props;
@@ -18,15 +19,16 @@ const isLoaded = ref(false);
 const shipHistory = ref({});
 const showHistory = ref(false);
 const showHistoryError = ref(false);
-const availableDate = ref([])
+const availableDate = ref([]);
 const date = ref(new Date());
+const componentKey = ref(0);
 
 onMounted(async () => {
     fetchShipDetails(id);
     isLoaded.value = true;
     showHistory.value = false;
 
-    getAvailableHistory(id)
+    getAvailableHistory(id);
 });
 
 const fetchShipDetails = async (shipId) => {
@@ -67,8 +69,8 @@ const editName = async (shipId) => {
 
 const viewHistory = async (shipId, selectedDate) => {
     try {
-        selectedDate = formatDate(selectedDate)
-        console.log(selectedDate)
+        selectedDate = formatDate(selectedDate);
+        console.log(selectedDate);
         const response = await axios.get(
             `/api/ship/${shipId}/history/${selectedDate}`
         );
@@ -82,6 +84,8 @@ const viewHistory = async (shipId, selectedDate) => {
                 showHistoryError.value = true;
             }
         }
+
+        componentKey.value += 1;
     } catch (error) {
         console.error("Error fetching ship details:", error);
     }
@@ -93,7 +97,7 @@ const getAvailableHistory = async (shipId) => {
             `/api/ship/${shipId}/history/available`
         );
         if (response.data.status === "success") {
-            availableDate.value = response.data.data.dates
+            availableDate.value = response.data.data.dates;
 
             // console.log(response.data.data.dates)
         }
@@ -108,11 +112,17 @@ const formatDate = (input) => {
 
     // Mengambil tahun, bulan, dan tanggal
     const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');  // Bulan dimulai dari 0
-    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, "0"); // Bulan dimulai dari 0
+    const dd = String(date.getDate()).padStart(2, "0");
 
     return `${yyyy}-${mm}-${dd}`;
-}
+};
+
+const handleDate = (modelData) => {
+    date.value = modelData;
+    viewHistory(id, date.value);
+};
+
 </script>
 
 <template>
@@ -164,37 +174,33 @@ const formatDate = (input) => {
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <!-- start history -->
-                    <div>
-                        <!-- Test pilih history -->
-
-                        <div class="flex mt-4 mb-4 justify-start gap-4 ml-4">
-                            <div class="flex justify-between items-center">
-                                <label
-                                    for="date"
-                                    class="block text-md font-medium text-gray-700"
-                                    >Pilih Tanggal Riwayat</label
-                                >
-                            </div>
-                            <div class="w-64">
-                                <!-- <input
-                                    type="date"
-                                    id="date"
-                                    name="date"
-                                    v-model="date"
-                                    class="mt-1 p-2 w-full border rounded-md focus:ring-green-500 focus:border-green-500"
-                                /> -->
-                                <datepicker v-model="date" format="yyyy-MM-dd" auto-apply :clearable="false" :highlight="availableDate"></datepicker>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <button
-                                    @click="
-                                        viewHistory(ship.ship_detail.id, date)
-                                    "
-                                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-                                >
-                                    Tampilkan History
-                                </button>
-                            </div>
+                    <div class="flex mt-4 mb-4 justify-end gap-4 mr-4">
+                        <div class="flex justify-between items-center">
+                            <label
+                                for="date"
+                                class="block text-md font-medium text-gray-700"
+                                >Pilih Tanggal Riwayat</label
+                            >
+                        </div>
+                        <div class="w-64">
+                            <datepicker
+                                v-model="date"
+                                format="yyyy-MM-dd"
+                                auto-apply
+                                :clearable="false"
+                                :highlight="availableDate"
+                                @update:model-value="handleDate"
+                                :max-date="new Date()"
+                                :min-date="DateTime.now().minus({month: 1})"
+                            ></datepicker>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <button
+                                @click="viewHistory(ship.ship_detail.id, date)"
+                                class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                            >
+                                Tampilkan History
+                            </button>
                         </div>
                     </div>
                     <!-- end history -->
@@ -226,7 +232,8 @@ const formatDate = (input) => {
                             <span class="block sm:inline"
                                 >Terdapat
                                 {{ shipHistory.history.length }} history
-                                pelayaran di tanggal {{ formatDate(date) }}.</span
+                                pelayaran di tanggal
+                                {{ formatDate(date) }}.</span
                             >
                         </div>
                     </div>
@@ -256,6 +263,7 @@ const formatDate = (input) => {
                         :logParking="ship.parking_log[0]"
                         :locationLog="ship.location_log[1]"
                         :historyLog="shipHistory"
+                        :key="componentKey"
                     />
 
                     <!-- end peta -->

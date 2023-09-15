@@ -8,6 +8,7 @@ use App\Models\Ship;
 use App\Models\ShipLocationLog;
 use App\Models\ParkingLog;
 use App\Models\Harbour;
+use App\Models\AppSetting;
 use App\Models\HarbourGeofence as Geofence;
 use Log;
 
@@ -15,7 +16,7 @@ class ShipController extends Controller
 {
     public function ships(Request $request)
     {
-        $fetch = Ship::with('harbourDetail')->get()->map(function($item){
+        $fetch = Ship::with('harbourDetail')->get()->map(function ($item) {
             return [
                 'id' => $item->id,
                 'name' => $item->name ?? null,
@@ -27,12 +28,12 @@ class ShipController extends Controller
                 'on_ground' => $item->on_ground,
                 'harbour' => in_array($item->status, ['checkin', 'checkout']) && $item->harbourDetail ? $item->harbourDetail->name : null,
             ];
-        });   
+        });
 
         return response()->json([
             'status' => 'success',
             'code' => 200,
-            'message'=> "Successfully get ships",
+            'message' => "Successfully get ships",
             'data' => $fetch
         ], 200);
     }
@@ -41,13 +42,13 @@ class ShipController extends Controller
     {
         $ship = Ship::where('id', $id)
             ->with('harbourDetail')
-            ->first();  
+            ->first();
 
         $logLocation = ShipLocationLog::where('ship_id', $id)
             ->orderBy('created_at', 'DESC')
             ->limit(10)
             ->get();
-        
+
         $logParking = ParkingLog::where('ship_id', $id)
             ->join('harbours', 'harbours.id', '=', 'parking_logs.harbour_id')
             ->select('parking_logs.*', 'harbours.name as harbour_name')
@@ -63,7 +64,7 @@ class ShipController extends Controller
         return response()->json([
             'status' => 'success',
             'code' => 200,
-            'message'=> "Successfully get ships",
+            'message' => "Successfully get ships",
             'data' => $fetch
         ], 200);
     }
@@ -83,16 +84,19 @@ class ShipController extends Controller
                 'on_ground',
             )
             ->with('harbourDetail')
-            ->first();  
+            ->first();
 
-        if(!$ship) {
+        if (!$ship) {
             return response()->json([
                 'status' => 'failed',
                 'code' => 400,
-                'message'=> "Device ID Not Found",
+                'message' => "Device ID Not Found",
                 'data' => null
             ], 400);
         }
+
+        // jika ada di darat maka status menjadi OFFLINE apapun yang terjadi! jika di laut maka status ya status
+        $ship->status = $ship->on_ground ? "OFFLINE" : $ship->status;
 
         $logParking = ParkingLog::where('ship_id', $ship->id)
             ->join('harbours', 'harbours.id', '=', 'parking_logs.harbour_id')
@@ -100,12 +104,24 @@ class ShipController extends Controller
             ->orderBy('harbours.created_at', 'DESC')
             ->get();
 
-        $ship['parking_log'] = $logParking ?? [];
+        $ship['parking_logs'] = $logParking ?? [];
+
+        // ambil setting dengan label 'device'
+        $appSetting = AppSetting::select('name', 'value')->where('label', 'device')
+            ->get();
+
+        $fixAppSetting = [];
+
+        foreach ($appSetting as $key => $value):
+            $fixAppSetting[$value['name']] = $value['value'];
+        endforeach;
+        
+        $ship['device_settings'] = $fixAppSetting ?? [];
 
         return response()->json([
             'status' => 'success',
             'code' => 200,
-            'message'=> "Successfully get ships",
+            'message' => "Successfully get ships",
             'data' => $ship
         ], 200);
     }
@@ -122,7 +138,7 @@ class ShipController extends Controller
             return response()->json([
                 'status' => 'success',
                 'code' => 200,
-                'message'=> "Successfully name ships",
+                'message' => "Successfully name ships",
                 'data' => $ship
             ], 200);
         } catch (\Throwable $th) {
@@ -130,7 +146,7 @@ class ShipController extends Controller
             return response()->json([
                 'status' => 'failed',
                 'code' => 400,
-                'message'=> $th->getMessage(),
+                'message' => $th->getMessage(),
                 'data' => ''
             ], 400);
         }
@@ -140,9 +156,14 @@ class ShipController extends Controller
     {
         DB::beginTransaction();
         try {
+            // dapatkan data kapal
             $is_update = Ship::where('device_id', $request->device_id)->first();
-            
-            if($is_update) {
+
+            // cek apa kapal ada di darat atau dilaut
+            $is_ship_on_water = $this->isWater($request->lat, $request->long);
+
+
+            if ($is_update) {
                 $ship = $is_update;
 
                 $sll = new ShipLocationLog();
@@ -150,26 +171,28 @@ class ShipController extends Controller
                 $sll->lat = $request->lat;
                 $sll->long = $request->long;
                 $sll->is_mocked = $request->is_mocked ? 1 : 0;
+                $sll->on_ground = !$is_ship_on_water;
+
+                // simpan log lokasi
                 $sll->save();
 
                 $nearestHarbourid = $this->checkNearestHarbour($request->lat, $request->long);
-
                 $harbourData = Harbour::where('id', $nearestHarbourid)->first();
 
                 $harbourGeofence = Geofence::where('harbour_id', $nearestHarbourid)
-                    ->select('long','lat')
-                    ->get()->map(function($item){
+                    ->select('long', 'lat')
+                    ->get()->map(function ($item) {
                         return [
                             $item->lat, $item->long
                         ];
                     });
 
-                if($this->statusCheck([$request->lat, $request->long], $harbourGeofence)){
+                if ($this->statusCheck([$request->lat, $request->long], $harbourGeofence)) {
                     $lastLogs = ParkingLog::where(['ship_id' => $ship->id, 'harbour_id' => $nearestHarbourid])
                         ->orderBy('created_at', 'DESC')
                         ->first();
-                    
-                    if(!$lastLogs || ($lastLogs && $lastLogs->status != 'checkin')) {
+
+                    if (!$lastLogs || ($lastLogs && $lastLogs->status != 'checkin')) {
                         $parkingLog = new ParkingLog();
                         $parkingLog->ship_id = $ship->id;
                         $parkingLog->harbour_id = $nearestHarbourid;
@@ -178,17 +201,17 @@ class ShipController extends Controller
                         $parkingLog->long = $request->long;
                         $parkingLog->save();
 
-                        try{
+                        try {
                             $this->pushNotification([
                                 'title' => 'SIMPEL - CHECK IN SUCCESS',
-                                'body' => 'Berhasil CHECK-IN ('.ucwords($harbourData->name).') '.date('ymd-hi'),
+                                'body' => 'Berhasil CHECK-IN (' . ucwords($harbourData->name) . ') ' . date('ymd-hi'),
                             ], [$ship->firebase_token]);
-                        } catch (Exception $e){
+                        } catch (Exception $e) {
                             Log::error('Push notification error: ' . $e->getMessage());
                         }
                         $isWater = true;
                     } else {
-                        $isWater = $this->isWater($request->lat, $request->long);
+                        $isWater = $is_ship_on_water;
                     }
 
                     $status = 'checkin';
@@ -196,12 +219,12 @@ class ShipController extends Controller
                     $lastLogs = ParkingLog::where(['ship_id' => $ship->id, 'harbour_id' => $nearestHarbourid])
                         ->orderBy('created_at', 'DESC')
                         ->first();
-                    
-                    if($lastLogs && $lastLogs->status == 'checkin') {
-                        if($ship->on_ground != 1) {
-                            $isWater = $this->isWater($request->lat, $request->long);
 
-                            if($isWater){
+                    if ($lastLogs && $lastLogs->status == 'checkin') {
+                        if ($ship->on_ground != 1) {
+                            $isWater = $is_ship_on_water;
+
+                            if ($isWater) {
                                 $parkingLog = new ParkingLog();
                                 $parkingLog->ship_id = $ship->id;
                                 $parkingLog->harbour_id = $nearestHarbourid;
@@ -210,12 +233,12 @@ class ShipController extends Controller
                                 $parkingLog->long = $request->long;
                                 $parkingLog->save();
 
-                                try{
+                                try {
                                     $this->pushNotification([
                                         'title' => 'SIMPEL - CHECK OUT SUCCESS',
-                                        'body' => 'Berhasil CHECK-OUT ('.ucwords($harbourData->name).') '.date('ymd-hi'),
+                                        'body' => 'Berhasil CHECK-OUT (' . ucwords($harbourData->name) . ') ' . date('ymd-hi'),
                                     ], [$ship->firebase_token]);
-                                } catch (Exception $e){
+                                } catch (Exception $e) {
                                     Log::error('Push notification error: ' . $e->getMessage());
                                 }
                             }
@@ -226,11 +249,11 @@ class ShipController extends Controller
                             $status = $ship->status;
                         }
                     } else {
-                        $isWater = $this->isWater($request->lat, $request->long);
+                        $isWater = $is_ship_on_water;
                         $status = 'out of scope';
                     }
                 }
-                
+
                 Ship::where('id', $ship->id)->update([
                     'lat' => $request->lat,
                     'long' => $request->long,
@@ -240,7 +263,7 @@ class ShipController extends Controller
                 ]);
 
             } else {
-                $isWater = $this->isWater($request->lat, $request->long);
+                $isWater = $is_ship_on_water;
 
                 $ship = new Ship();
                 $ship->device_id = $request->device_id;
@@ -261,7 +284,7 @@ class ShipController extends Controller
             return response()->json([
                 'status' => 'success',
                 'code' => 200,
-                'message'=> "Successfully set ship",
+                'message' => "Successfully set ship",
                 'data' => $ship->id
             ], 200);
         } catch (\Throwable $th) {
@@ -269,33 +292,34 @@ class ShipController extends Controller
             return response()->json([
                 'status' => 'failed',
                 'code' => 400,
-                'message'=> $th->getMessage(),
+                'message' => $th->getMessage(),
                 'data' => ''
             ], 400);
         }
     }
 
-    function statusCheck($coord, $polygon) {
+    function statusCheck($coord, $polygon)
+    {
         $x = $coord[0];
         $y = $coord[1];
-        
+
         $isInside = false;
-        
+
         $numVertices = count($polygon);
         for ($i = 0, $j = $numVertices - 1; $i < $numVertices; $j = $i++) {
             $xi = $polygon[$i][0];
             $yi = $polygon[$i][1];
             $xj = $polygon[$j][0];
             $yj = $polygon[$j][1];
-            
+
             $intersect = (($yi > $y) != ($yj > $y)) &&
-                         ($x < ($xj - $xi) * ($y - $yi) / ($yj - $yi) + $xi);
-            
+                ($x < ($xj - $xi) * ($y - $yi) / ($yj - $yi) + $xi);
+
             if ($intersect) {
                 $isInside = !$isInside;
             }
         }
-        
+
         return $isInside;
     }
 
@@ -324,32 +348,33 @@ class ShipController extends Controller
         return $nearestLocationId;
     }
 
-    public function pushNotification($data, $tokens) {
+    public function pushNotification($data, $tokens)
+    {
         $url = 'https://fcm.googleapis.com/fcm/send';
         $headers = [
             'Content-Type: application/json',
-            'Authorization: key='.env('FIREBASE_KEY'), // Replace with your FCM server key
+            'Authorization: key=' . env('FIREBASE_KEY'), // Replace with your FCM server key
         ];
-    
+
         $postData = [
             'registration_ids' => $tokens,
             'notification' => $data,
         ];
-    
+
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
-    
+
         $response = curl_exec($ch);
-    
+
         if (curl_errno($ch)) {
             $error = curl_error($ch);
             curl_close($ch);
             return ['success' => false, 'error' => $error];
         }
-    
+
         curl_close($ch);
         return ['success' => true, 'response' => json_decode($response, true)];
     }
@@ -359,7 +384,7 @@ class ShipController extends Controller
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => "https://".env('RAPIDAPI_ISITWATER_HOST')."/?latitude=".$lat."&longitude=".$long,
+            CURLOPT_URL => "https://" . env('RAPIDAPI_ISITWATER_HOST') . "/?latitude=" . $lat . "&longitude=" . $long,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -367,8 +392,8 @@ class ShipController extends Controller
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => "GET",
             CURLOPT_HTTPHEADER => [
-                "X-RapidAPI-Host: ".env('RAPIDAPI_ISITWATER_HOST'),
-                "X-RapidAPI-Key: ".env('RAPIDAPI_KEY')
+                "X-RapidAPI-Host: " . env('RAPIDAPI_ISITWATER_HOST'),
+                "X-RapidAPI-Key: " . env('RAPIDAPI_KEY')
             ],
         ]);
 
@@ -377,11 +402,11 @@ class ShipController extends Controller
 
         curl_close($curl);
 
-        if($err){
+        if ($err) {
             Log::error('Check Water: ' . $err);
         } else {
             return json_decode($response)->water;
         }
     }
-    
+
 }

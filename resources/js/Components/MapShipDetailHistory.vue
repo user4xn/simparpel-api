@@ -13,10 +13,13 @@
 <script>
 import L from "leaflet";
 import "leaflet-polylinedecorator";
+import "leaflet-rotatedmarker";
 import "leaflet/dist/leaflet.css";
+// import GeometryUtil from "leaflet-geometryutil";
 import axios from "axios";
 import shipMarkerIcon from "../../../public/images/ship-marker.png";
 import fishermanMarkerIcon from "../../../public/images/fisherman-marker.png";
+import * as turf from '@turf/turf'
 
 export default {
     props: {
@@ -91,6 +94,12 @@ export default {
         },
         initializeShipMarker() {
             const latlngs = [];
+
+            const markerIcon = L.icon({
+                iconUrl: shipMarkerIcon,
+                iconSize: [20, 40],
+            });
+
             this.historyLog.history.forEach((val, index) => {
                 latlngs.push([val.lat, val.long]);
             });
@@ -105,7 +114,7 @@ export default {
                 patterns: [
                     {
                         offset: 0,
-                        repeat: 20,
+                        repeat: 15,
                         symbol: L.Symbol.arrowHead({
                             pixelSize: 10,
                             polygon: false,
@@ -115,10 +124,19 @@ export default {
                 ],
             }).addTo(this.map);
 
-            const shipMarker = L.marker([
-                this.last_place.lat,
-                this.last_place.long,
-            ]).addTo(this.map);
+            /** ambil rotasi **/
+            var rotasi = this.calculateBearing();
+            // rotasi += 20
+            console.log("test rotasi : ", rotasi);
+
+            const shipMarker = L.marker(
+                [this.last_place.lat, this.last_place.long],
+                {
+                    icon: markerIcon,
+                    rotationAngle: rotasi,
+                    rotationOrigin: "center center",
+                }
+            ).addTo(this.map);
             shipMarker.bindPopup(
                 this.shipDetail.name ? this.shipDetail.name : "Unnamed Ship"
             );
@@ -129,6 +147,37 @@ export default {
         },
         reFocusShipMarker() {
             this.map.setView([this.last_place.lat, this.last_place.long], 13);
+        },
+        calculateBearing() {
+            // cek apa ada lebih dari 1 koordinat
+            if (this.historyLog.history.length <= 1) {
+                // jika cuma 1, set ke 0
+                return 0;
+            } else {
+                // jika lebih dari 1, ambil 2 koordinat terakhir
+                var array_coordinate = this.historyLog.history;
+                // array_coordinate.reverse()
+                const slicedArray = array_coordinate.slice(-2);
+
+                // console.log("koordinate", slicedArray)
+                console.log(
+                    "test koordinat 0",
+                    slicedArray[0].lat,
+                    slicedArray[0].long
+                );
+                console.log(
+                    "test koordinat 1",
+                    slicedArray[1].lat,
+                    slicedArray[1].long
+                );
+                // return GeometryUtil.bearing(new L.LatLng(slicedArray[0].lat, slicedArray[0].long), new L.LatLng(slicedArray[1].lat, slicedArray[1].long))
+
+                const point1 = turf.point([slicedArray[0].lat, slicedArray[0].long]);
+                const point2 = turf.point([slicedArray[1].lat, slicedArray[1].long]);
+                const bear = turf.bearing(point1, point2);
+
+                return bear-45
+            }
         },
     },
     data() {
