@@ -24,6 +24,7 @@ Route::get('/ship', 'App\Http\Controllers\ShipController@ships');
 Route::get('/ship/{id}/status', 'App\Http\Controllers\ShipController@shipStatus');
 Route::post('/ship/upsert', 'App\Http\Controllers\ShipController@upsertShip');
 Route::put('/ship/{id}/name', 'App\Http\Controllers\ShipController@nameShip');
+Route::get('/ship/find/{keyword}', 'App\Http\Controllers\ShipController@findShipByKeyword');
 
 // history kapal
 Route::get('/ship/{id}/history/available', 'App\Http\Controllers\ShipHistoryController@available_date');

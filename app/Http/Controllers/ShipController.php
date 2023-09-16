@@ -115,7 +115,7 @@ class ShipController extends Controller
         foreach ($appSetting as $key => $value):
             $fixAppSetting[$value['name']] = $value['value'];
         endforeach;
-        
+
         $ship['device_settings'] = $fixAppSetting ?? [];
 
         return response()->json([
@@ -125,6 +125,52 @@ class ShipController extends Controller
             'data' => $ship
         ], 200);
     }
+
+
+    public function findShipByKeyword(Request $request, $keyword)
+    {
+        $searchTerm = $keyword;
+        $ship = Ship::select(
+            'id',
+            'name',
+            'device_id',
+            'long',
+            'lat',
+            'status',
+            'on_ground',
+            'updated_at',
+            'harbour_id',
+        )
+            ->where('name', 'like', '%' . $searchTerm . '%')
+            ->orWhere('device_id', 'like', '%' . $searchTerm . '%')
+            ->with('harbourDetail')
+            ->limit(25)
+            ->orderBy('name', 'ASC')
+            ->get();
+
+        if (!$ship) {
+            return response()->json([
+                'status' => 'failed',
+                'code' => 400,
+                'message' => "Ship Not Found",
+                'data' => null
+            ], 400);
+        }
+
+        $fix_ship = [];
+        foreach ($ship as $key => $value) {
+            // jika ada di darat maka status menjadi OFFLINE apapun yang terjadi! jika di laut maka status ya status
+            $value->status = $value->on_ground ? "OFFLINE" : $value->status;
+            $fix_ship[] = $value; 
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'code' => 200,
+            'message' => "Successfully get " . count($fix_ship) . " ships",
+            'data' => $fix_ship
+        ], 200);
+    } // end func
 
     public function nameShip(Request $request, $id)
     {
