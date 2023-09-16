@@ -175,4 +175,11 @@ export default {
     background-color: lightgrey; /* Warna latar belakang scrollbar */
     border-radius: 2px; /* Melengkungkan sudut */
 }
+
+@media only screen and (max-width: 600px) {
+  .sidebar {
+    width: 96vw;
+    top: 10vh;
+  }
+}
 </style>
